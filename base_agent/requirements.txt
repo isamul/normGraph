@@ -1,0 +1,6 @@
+langgraph
+langchain_community
+langchain_openai
+openai
+neo4j
+wolframalpha
