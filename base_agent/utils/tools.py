@@ -450,12 +450,12 @@ async def DocumentRetriever(query: str, data_type: str):
     
     # ToDo: Support type filters
     context = "Document Placeholder"
-    return {'retrieved information': context, 'function message': 'test'}
+    return {'retrieved information': context}
     
 
 class DocumentRetrieverInput(BaseModel):
     query: str = Field(description="Searchquery to retrieve relevant context information from a database containing specialized knowledge regarding civil engineering topics. Only search for one subject at a time. Make multiple calls for different subjects.")
-    data_type: str = Field(description="Category of the subject to be searched.", 
+    data_type: str = Field(description="Category of the subject to be searched. Choose from the predifined categories depending on the type of information the user query is about.", 
                           enum=["Definition", "Parameter", "Equation", "Table", "Process", "Proof", "Other"])
     
 
@@ -496,7 +496,7 @@ async def SearchDataBase(query: str, data_type: str, category: str):
 
 class SearchDataBaseInput(BaseModel):
     query: str = Field(description="Searchquery to retrieve relevant context information for highly complex user queries from a specialized database.")
-    data_type: str = Field(description="Category of the subject to be searched.", 
+    data_type: str = Field(description="Category of the subject to be searched. Choose from the predifined categories depending on the type of information the user query is about.", 
                           enum=["Definition", "Parameter", "Equation", "Table", "Process", "Proof", "Other"])
     category: str = Field(description="Thematic category of civil engineering to be searched. Choose depending on the topic of the user query: 'DIN 1' for Snowloads, 'DIN 2' for Windloads, 'DIN 3' for bending moments",
                        enum=["DIN 1", "DIN 2", "DIN 3", "Other"])
