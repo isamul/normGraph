@@ -8,6 +8,7 @@
 #OPENAI_API_KEY = os.getenv('OPENAI_API_KEY')
 
 from langgraph.graph import StateGraph, END
+from langgraph.checkpoint.memory import MemorySaver
 from base_agent.utils.nodes import call_agent_model, agent_route, get_help, extract_task, agent_tool_node
 from base_agent.utils.expert_nodes import call_database, create_plan, task_handler, database_handler, user_handler, human_feedback, calculation_handler, llm_handler, task_router, output_handler, feedback_handler
 from base_agent.utils.state import AgentState
@@ -78,4 +79,5 @@ workflow.add_edge("OutputHandler", END)
 
 
 # Compile the graph
-graph = workflow.compile()
+memory = MemorySaver()
+graph = workflow.compile(checkpointer=memory, interrupt_before=['HumanFeedback'])

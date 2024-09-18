@@ -2,10 +2,12 @@
 from typing import List
 from langchain_core.tools import tool
 from pydantic import BaseModel, Field
+from pydantic.v1 import BaseModel as BaseModelV1, Field as FieldV1
 from wolframalpha import Client
 import os
 import re
-from openai import OpenAI
+#from openai import OpenAI
+import voyageai
 from neo4j import GraphDatabase
 from collections import defaultdict, deque
 
@@ -14,10 +16,11 @@ neo4j_uri = os.environ["NEO4J_URI"]
 neo4j_user = os.environ["NEO4J_USER"]
 neo4j_password = os.environ["NEO4J_PASSWORD"]
 wolfram_alpha_appid = os.environ["WOLFRAM_ALPHA_APPID"]
-EMBEDDING_MODEL  = "text-embedding-3-small" # can be shortened
-
+#EMBEDDING_MODEL  = "text-embedding-3-small" # can be shortened
+EMBEDDING_MODEL = 'voyage-multilingual-2'
 driver = GraphDatabase.driver(neo4j_uri, auth=(neo4j_user, neo4j_password))
-openai_client = OpenAI ()
+#openai_client = OpenAI ()
+vo = voyageai.Client()
 wa = Client(wolfram_alpha_appid)
 
 print("Driver and OpenAI client initialized...")
@@ -64,7 +67,6 @@ class Conclusion(BaseModel):
     conclusion: str = Field(description="The conclusion based on the given task, the plan created to solve the task as well as the results of each of the steps that are part of the plan. The answer should be a direct response to the task, and should outline the process that lead to the final conclusion. Use markdown to format the text and make it more easily readable.")
     citations: List[str] = Field(description="Source information used to solve the task, designated as the headings and titles of the sources. The citations consists of strings in a list format. Only include the headings and titles of the sources, not the full content of the sources. A citation entry consists of the source document title printed in brackets (e.g. [Eurocode 1]), as well as the specific section number and title of the source used (e.g. 4.5.6 Calculating Wind Load Configurations) -> Exemplary citation entry: 'Eurocode 1: 4.5.6 Calculating Wind Load Configurations'. Also include tables, equations graphs or similar information, that was retrieved during the plan execution. Only extract the relevant information used for the task, and exclude any irrelevant information from the context.")
 
-
 class Section:
     def __init__(self, id, parent_id, title='', num='', elements=[], isReference=False):
         self.id = id
@@ -107,11 +109,12 @@ class Chunk:
         return chunk_str
 
 def get_embedding(client, text, model):
-    response = client.embeddings.create(
-                    input=text,
+    response = client.embed(
+                    texts=text,
                     model=model,
+                    input_type="query",
                 )
-    return response.data[0].embedding
+    return response.embeddings[0]
 
 def reciprocal_rank_fusion(queries, d, k, searchResults, rank_func):
     return sum([1.0 / (k + rank_func(searchResults[q], d)) if d in searchResults[q] else 0 for q in queries])
@@ -439,23 +442,23 @@ Area 4: c_s = 6,3 [kN/m^2]
 async def DocumentRetriever(query: str, data_type: str):
     """Call to retrieve relevant documents from a specialized database."""
     contextString = ""
-    #results = RRFGraphQuery(query, 3, driver, openai_client)
+    results = RRFGraphQuery(query, 3, driver, vo)
     #print("DocumentRetriever: Results retrieved...")
-    #keys = [key for key in results.keys()]
-    #results = RetrieveSections(keys, driver)
-    #root_section = parse_query_response(results)
+    keys = [key for key in results.keys()]
+    results = RetrieveSections(keys, driver)
+    root_section = parse_query_response(results)
 
-    #context = root_section.__str__()
-    #context = reduce_linebreaks(context)
+    context = root_section.__str__()
+    context = reduce_linebreaks(context)
     
     # ToDo: Support type filters
-    context = "Document Placeholder"
+    #context = "Document Placeholder"
     return {'retrieved information': context}
     
 
-class DocumentRetrieverInput(BaseModel):
-    query: str = Field(description="Searchquery to retrieve relevant context information from a database containing specialized knowledge regarding civil engineering topics. Only search for one subject at a time. Make multiple calls for different subjects.")
-    data_type: str = Field(description="Category of the subject to be searched. Choose from the predifined categories depending on the type of information the user query is about.", 
+class DocumentRetrieverInput(BaseModelV1):
+    query: str = FieldV1(description="Searchquery to retrieve relevant context information from a database containing specialized knowledge regarding civil engineering topics. Only search for one subject at a time. Make multiple calls for different subjects.")
+    data_type: str = FieldV1(description="Category of the subject to be searched. Choose from the predifined categories depending on the type of information the user query is about. A coefficient is considered a parameter.", 
                           enum=["Definition", "Parameter", "Equation", "Table", "Process", "Proof", "Other"])
     
 
@@ -470,8 +473,8 @@ async def InvokeExpertModel(task: str):
 
     return ["Expert Placeholder"]
 
-class InvokeExpertModelInput(BaseModel):
-    task: str = Field(description="Task to be performed by the expert model. Input the unmodified user given task as, while including all relevant information from the conversation history if applicable, for the best possible results. Don't change nuances or details of the user query, like omitting 'my' or 'mine'. The expert models behavior depends on these little nuances.")
+class InvokeExpertModelInput(BaseModelV1):
+    task: str = FieldV1(description="Task to be performed by the expert model. Input the unmodified user given task as, while including all relevant information from the conversation history if applicable, for the best possible results. Don't change nuances or details of the user query, like omitting 'my' or 'mine'. The expert models behavior depends on these little nuances.")
 
 InvokeExpertModel.args_schema = InvokeExpertModelInput
 InvokeExpertModel.name = "InvokeExpertModel"
@@ -482,7 +485,7 @@ async def SearchDataBase(query: str, data_type: str, category: str):
     """Call to retrieve relevant documents required for answering the user query from a database, containing information about civil engineering processes and terminology."""
     
 
-    #results = RRFGraphQuery(query, 3, driver, openai_client)
+    #results = RRFGraphQuery(query, 3, driver, vo)
     #print("DocumentRetriever: Results retrieved...")
     #keys = [key for key in results.keys()]
     #results = RetrieveSections(keys, driver)
@@ -494,11 +497,11 @@ async def SearchDataBase(query: str, data_type: str, category: str):
     context = "Context Placeholder" + f"Query: {query}, Data Type: {data_type}, Category: {category}"
     return {'retrieved information': context, 'function message': 'test'}
 
-class SearchDataBaseInput(BaseModel):
-    query: str = Field(description="Searchquery to retrieve relevant context information for highly complex user queries from a specialized database.")
-    data_type: str = Field(description="Category of the subject to be searched. Choose from the predifined categories depending on the type of information the user query is about.", 
+class SearchDataBaseInput(BaseModelV1):
+    query: str = FieldV1(description="Searchquery to retrieve relevant context information for highly complex user queries from a specialized database.")
+    data_type: str = FieldV1(description="Category of the subject to be searched. Choose from the predifined categories depending on the type of information the user query is about.", 
                           enum=["Definition", "Parameter", "Equation", "Table", "Process", "Proof", "Other"])
-    category: str = Field(description="Thematic category of civil engineering to be searched. Choose depending on the topic of the user query: 'DIN 1' for Snowloads, 'DIN 2' for Windloads, 'DIN 3' for bending moments",
+    category: str = FieldV1(description="Thematic category of civil engineering to be searched. Choose depending on the topic of the user query: 'DIN 1' for Snowloads, 'DIN 2' for Windloads, 'DIN 3' for bending moments",
                        enum=["DIN 1", "DIN 2", "DIN 3", "Other"])
     
 SearchDataBase.args_schema = SearchDataBaseInput
@@ -510,8 +513,8 @@ async def GetHelp(query: str):
     """Call to display information to the user, on how to use this application."""
     return ["Help Placeholder"]
 
-class GetHelpInput(BaseModel):
-    is_needed: bool = Field(description="Boolean value to determine if the user needs help or not.", 
+class GetHelpInput(BaseModelV1):
+    is_needed: bool = FieldV1(description="Boolean value to determine if the user needs help or not.", 
                             enum=[True, False])
 
 GetHelp.args_schema = GetHelpInput

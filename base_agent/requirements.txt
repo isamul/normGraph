@@ -4,3 +4,4 @@ langchain_openai
 openai
 neo4j
 wolframalpha
+voyageai
