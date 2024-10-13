@@ -97,7 +97,7 @@ def task_handler(state):
     plan = state["plan"]
     step_count = len(plan.steps)
 
-    print("Index:" + str(index) + "Step count: " + str(step_count))
+    print("Index: " + str(index) + ", Step count: " + str(step_count))
     if index < (step_count):
         current_step = plan.steps[index]
 
@@ -252,7 +252,7 @@ def output_handler(state):
     
     #result = model.invoke(output_prompt.format(task=task, plan=plan_string, step_results=result_string)) old output method
 
-    result = result = structured_model.invoke(output_prompt.format(context=context, task=task, plan=plan_string, step_results=result_string))
+    result = structured_model.invoke(output_prompt.format(context=context, task=task, plan=plan_string, step_results=result_string))
 
     messages = []
     messages.append(AIMessage(result.conclusion))

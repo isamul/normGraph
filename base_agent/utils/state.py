@@ -34,13 +34,10 @@ class Plan(BaseModel):
 class AgentState(TypedDict):
     messages: Annotated[Sequence[BaseMessage], add_messages]
     task: str
-
-class ExpertState(TypedDict):
-    messages: Annotated[Sequence[BaseMessage], add_messages]
-    task: str
     plan: Plan
     plan_index: int
     step_results: Annotated[StepResult, operator.add]
     context: str
     response: str
     log: str
+    
