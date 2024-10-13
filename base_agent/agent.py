@@ -1,12 +1,3 @@
-#from typing import TypedDict, Literal
-
-#import os
-#from dotenv import load_dotenv
-#load_dotenv()
-#ANTHROPIC_API_KEY = os.getenv('ANTHROPIC_API_KE')
-#TAVILY_API_KEY = os.getenv('TAVILY_API_KEY')
-#OPENAI_API_KEY = os.getenv('OPENAI_API_KEY')
-
 from langgraph.graph import StateGraph, END
 from langgraph.checkpoint.memory import MemorySaver
 from base_agent.utils.nodes import call_agent_model, agent_route, get_help, extract_task, agent_tool_node

@@ -3,6 +3,7 @@ from langchain_openai import ChatOpenAI
 from base_agent.utils.tools import Plan, StepResult, Calculation, Conclusion, SearchDataBase, parse_steps_fixed, DataBase, sort_steps, wa
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.messages import AIMessage
+from openai import OpenAI
 #from pydantic import BaseModel, Field
 #from typing import List
 from base_agent.utils.prompts import planner_prompt, extractor_prompt, reasoning_prompt, calculator_prompt, output_prompt
@@ -20,7 +21,13 @@ def _get_model(model_name: str):
     elif model_name == "mini":
         llm = ChatOpenAI(temperature=0, model_name="gpt-4o-mini", streaming=False)
         return llm
-# bind tools?
+    elif model_name == "calculator":
+        client = OpenAI()
+        assistant = client.beta.assistants.retrieve(
+            assistant_id='asst_7VQGXcbxkAgXMYNLns3e5tTU'
+            )
+        return client, assistant
+
     
 def add_dependencies(step, dependencies, dependency_results):
     for dependency in dependencies:
@@ -85,7 +92,7 @@ def create_plan(state):
     sorted_step_order = sort_steps(steps)
     sorted_steps = sorted(steps, key=lambda step: sorted_step_order.index(step.step_number))
     plan = Plan(steps=sorted_steps)
-    #sr = StepResult(step_number="E0", result="Plan created")
+   
 
     return {"plan": plan, "plan_index": 0, "step_results": []}
 
@@ -125,13 +132,7 @@ def database_handler(state):
 
         current_step = add_dependencies(current_step, dependencies, dependency_results)
 
-    #res = DataBase(query=current_step.step_input, data_type="placeholder", category="placeholder")
-
     sr = StepResult(step_number=current_step.step_number, result="Area 2")
-
-    #sr = {"step_number": current_step.step_number, "result": "Database response"}
-    #step_results.append(sr)
-
 
     return {"step_results": [sr], "plan_index": index + 1}
 
@@ -163,16 +164,13 @@ def feedback_handler(state):
     plan = state["plan"]
     current_step = plan.steps[index]
 
-    # add gpt-4o to extract relevant information from the user feedback according to the user_query
     question = current_step.step_input
     model = _get_model("mini")
 
     result = model.invoke(extractor_prompt.format(question=question, answer=last_message))
     
-    #step_results.append(StepResult(step_number=current_step.step_number, result=last_message))
 
     sr = StepResult(step_number=current_step.step_number, result=result.content)
-    #sr = {"step_number": current_step.step_number, "result": result.content}
     return {"step_results": [sr], "plan_index": index + 1}
 
 def calculation_handler(state):
@@ -185,11 +183,8 @@ def calculation_handler(state):
         dependencies = current_step.dependencies
         dependency_results = state["step_results"]
 
-        #current_step = add_dependencies(current_step, dependencies, dependency_results)
         dependency_string = add_dependencies_to_string(current_step, dependencies, dependency_results)
 
-    # wolfram alpha should be prompted to solve the given equation
-    # llm model should read the input and provide the raw math problem
     print(dependency_string)
     model = _get_model("mini")
     structured_model = model.with_structured_output(Calculation, method="json_schema") 
@@ -199,9 +194,27 @@ def calculation_handler(state):
 
     print("Augmented Step Input: " + str(current_step.step_input))
 
-    res = wa.query(result.problem_plain_text)
-    sr = StepResult(step_number=current_step.step_number, result=next(res.results).text)
+    calc_client, calc_model = _get_model("calculator")
+    thread = calc_client.beta.threads.create()
+    
+    message = calc_client.beta.threads.messages.create(
+        thread_id=thread.id,
+        role="user",
+        content=result.problem_plain_text
+        )
+    
+    run = calc_client.beta.threads.runs.create_and_poll(
+        thread_id=thread.id,
+        assistant_id=calc_model.id
+        )
+    
+    if run.status == 'completed': 
+        messages = calc_client.beta.threads.messages.list(
+            thread_id=thread.id
+        )
 
+    response = messages.data[0].content[0].text.value
+    sr = StepResult(step_number=current_step.step_number, result=response)
     return {"step_results": [sr], "plan_index": index + 1}
 
 def llm_handler(state):
@@ -213,8 +226,6 @@ def llm_handler(state):
     if current_step.dependencies != []:
         dependencies = current_step.dependencies
         dependency_results = state["step_results"]
-        #print(dependency_results)
-        #print("Hello from llm")
 
         current_step = add_dependencies(current_step, dependencies, dependency_results)
 
@@ -250,7 +261,6 @@ def output_handler(state):
     model = _get_model("mini")
     structured_model = model.with_structured_output(Conclusion, method="json_schema")
     
-    #result = model.invoke(output_prompt.format(task=task, plan=plan_string, step_results=result_string)) old output method
 
     result = structured_model.invoke(output_prompt.format(context=context, task=task, plan=plan_string, step_results=result_string))
 

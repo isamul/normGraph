@@ -1,10 +1,16 @@
 from functools import lru_cache
-#from langchain_anthropic import ChatAnthropic
 from langchain_openai import ChatOpenAI
 from base_agent.utils.tools import SearchDataBase, agent_tools
-from base_agent.utils.prompts import agent_system_prompt
+from base_agent.utils.prompts import agent_system_prompt_de
 from langgraph.prebuilt import ToolNode
 from langchain_core.messages import AIMessage, ToolMessage
+from langfuse.callback import CallbackHandler
+
+langfuse_handler = CallbackHandler(
+    secret_key="",
+    public_key="",
+    host="https://cloud.langfuse.com", # 🇪🇺 EU region
+)
 
 
 @lru_cache(maxsize=4)
@@ -49,11 +55,11 @@ def agent_route(state):
 # Define the function that calls the model
 def call_agent_model(state):
     messages = state["messages"]
-    messages = [{"role": "system", "content": agent_system_prompt}] + messages
+    messages = [{"role": "system", "content": agent_system_prompt_de}] + messages
     #model_name = config.get('configurable', {}).get("model_name", "anthropic")
     model_name = 'agent'
     model = _get_model(model_name)
-    response = model.invoke(messages)
+    response = model.invoke(messages, config={"callbacks": [langfuse_handler]})
     # We return a list, because this will get added to the existing list
     return {"messages": [response]}
 
