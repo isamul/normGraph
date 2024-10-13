@@ -25,7 +25,7 @@ wa = Client(wolfram_alpha_appid)
 
 print("Driver and OpenAI client initialized...")
 
-#----------------- Define Retrieval Utils -----------------#
+#----------------- Define Data Classes -----------------#
 class Step(BaseModel):
     """Step to contribute to solving a task sequentially. Includes the task desctiption as well as the optional data to use."""
 
@@ -108,6 +108,7 @@ class Chunk:
 
         return chunk_str
 
+#----------------- Define Retrieval Utils -----------------#
 def get_embedding(client, text, model):
     response = client.embed(
                     texts=text,
@@ -117,6 +118,7 @@ def get_embedding(client, text, model):
     return response.embeddings[0]
 
 def reciprocal_rank_fusion(queries, d, k, searchResults, rank_func):
+    # based on code from https://safjan.com/implementing-rank-fusion-in-python/ by Krystian Safjan
     return sum([1.0 / (k + rank_func(searchResults[q], d)) if d in searchResults[q] else 0 for q in queries])
 
 def rank_func(results, d):
@@ -138,6 +140,9 @@ def apply_reciprocal_rank_fusion(dist_results, queries, searchResults):
     return sorted_result_dict
 
 def RRFGraphQuery(query: str, k: int, driver: GraphDatabase.driver, client: voyageai.Client):
+    """
+    Takes a query and returns the top k results from the graph database
+    """
     # Perform TextSearch
     indexName = "titles" # Index containing section and chapter titles
     textCypher= f"CALL db.index.fulltext.queryNodes('{indexName}', '{query}') YIELD node, score RETURN DISTINCT node.title AS title, node.id AS id, score"
@@ -167,8 +172,8 @@ RETURN DISTINCT root.title as title, root.id AS id, MAX(score) AS maxScore
     searchResults = {'textSearch': [result['id'] for result in textResults], 'vecSearch': [result['id'] for result in vectorResults]}
     unique_values = gather_unique_values(searchResults)
     print("Unique values gathered...")
-    # Perform Reciprocal Rank Fusion
 
+    # Perform Reciprocal Rank Fusion
     queries = ['textSearch', 'vecSearch']
     ranked_results = apply_reciprocal_rank_fusion(unique_values, queries, searchResults)
     print("RRF performed...")
@@ -417,31 +422,10 @@ def sort_steps(steps):
     return sorted_steps
 #----------------- Define the LLM tools -----------------#
 
-
-def DataBase(query: str, data_type: str, category: str):
-    context = "Context Placeholder" + f"Query: {query}, Data Type: {data_type}, Category: {category}"
-
-    context = """[Eurocode 1]
-3.1.1 Calculating the snow load of a flat roof
-
-1. Determine the snow-fall area based on the Table 3.4 
-2. According to the snow-fall area, determine the corresponding snow-fall coefficient c_s listed below:
-
-Area 1: c_s = 2,4 [kN/m^2]
-Area 2: c_s = 3,5 [kN/m^2]
-Area 3: c_s = 1,7 [kN/m^2]
-Area 4: c_s = 6,3 [kN/m^2]
-
-3. The snow load can finally be calculated by multiplying the flat-roof area A_s with the previously determined snow-fall coefficient c_s. Snow load F_s = A_s \times c_s."""
-
-    return {'retrieved information': context, 'function message': 'test'}
-
-#----------------- Define the LLM tools -----------------#
-
 @tool
 async def DocumentRetriever(query: str, data_type: str):
     """Call to retrieve relevant documents from a specialized database."""
-    contextString = ""
+
     results = RRFGraphQuery(query, 5, driver, vo)
     
     #print("DocumentRetriever: Results retrieved...")
@@ -485,25 +469,25 @@ InvokeExpertModel.description = "Returns the result of a complex user query, ret
 async def SearchDataBase(query: str, data_type: str, category: str):
     """Call to retrieve relevant documents required for answering the user query from a database, containing information about civil engineering processes and terminology."""
     
+    # modified version of the DocumentRetriever tool containing additional category information for the PLM to use
+    results = RRFGraphQuery(query, 3, driver, vo)
+    #print("SearchDataBase: Results retrieved...")
+    keys = [key for key in results.keys()]
+    results = RetrieveSections(keys, driver)
+    root_section = parse_query_response(results)
 
-    #results = RRFGraphQuery(query, 3, driver, vo)
-    #print("DocumentRetriever: Results retrieved...")
-    #keys = [key for key in results.keys()]
-    #results = RetrieveSections(keys, driver)
-    #root_section = parse_query_response(results)
-
-    #context = root_section.__str__()
-    #context = reduce_linebreaks(context)
+    context = root_section.__str__()
+    context = reduce_linebreaks(context)
     
-    context = "Context Placeholder" + f"Query: {query}, Data Type: {data_type}, Category: {category}"
-    return {'retrieved information': context, 'function message': 'test'}
+    #context = "Context Placeholder" + f"Query: {query}, Data Type: {data_type}, Category: {category}"
+    return {'retrieved information': context}
 
 class SearchDataBaseInput(BaseModelV1):
     query: str = FieldV1(description="Searchquery to retrieve relevant context information for highly complex user queries from a specialized database.")
     data_type: str = FieldV1(description="Category of the subject to be searched. Choose from the predifined categories depending on the type of information the user query is about.", 
                           enum=["Definition", "Parameter", "Equation", "Table", "Process", "Proof", "Other"])
-    category: str = FieldV1(description="Thematic category of civil engineering to be searched. Choose depending on the topic of the user query: 'DIN 1' for Snowloads, 'DIN 2' for Windloads, 'DIN 3' for bending moments",
-                       enum=["DIN 1", "DIN 2", "DIN 3", "Other"])
+    category: str = FieldV1(description="Thematic category of civil engineering to be searched. Choose depending on the topic of the user query: 'DIN 1993-1-3' for Snowloads",
+                       enum=["DIN 1993-1-3", "Other"])
     
 SearchDataBase.args_schema = SearchDataBaseInput
 SearchDataBase.name = "SearchDataBase"

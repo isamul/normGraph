@@ -1,3 +1,6 @@
+# This file defines the data structures and types used to represent the state of an agent in the system.
+# It includes classes for individual steps, plans, and the overall agent state, which are used to manage and execute tasks sequentially.
+
 import operator
 from langgraph.graph import add_messages
 from langchain_core.messages import BaseMessage
