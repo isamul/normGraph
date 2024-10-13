@@ -137,7 +137,7 @@ def apply_reciprocal_rank_fusion(dist_results, queries, searchResults):
     sorted_result_dict = dict(sorted(result_dict.items(), key=lambda item: item[1], reverse=True))
     return sorted_result_dict
 
-def RRFGraphQuery(query: str, k: int, driver: GraphDatabase.driver, client: OpenAI):
+def RRFGraphQuery(query: str, k: int, driver: GraphDatabase.driver, client: voyageai.Client):
     # Perform TextSearch
     indexName = "titles" # Index containing section and chapter titles
     textCypher= f"CALL db.index.fulltext.queryNodes('{indexName}', '{query}') YIELD node, score RETURN DISTINCT node.title AS title, node.id AS id, score"
@@ -148,7 +148,7 @@ def RRFGraphQuery(query: str, k: int, driver: GraphDatabase.driver, client: Open
     print("Text search results retrieved...")
 
     # Perform VectorSearch
-    vecIndex = 'content-embeddings'
+    vecIndex = 'content-embeddings-vo'
     resultCount = k
     queryEmbedding = get_embedding(client, query, EMBEDDING_MODEL)
     print("Embedding generated...")
@@ -442,7 +442,8 @@ Area 4: c_s = 6,3 [kN/m^2]
 async def DocumentRetriever(query: str, data_type: str):
     """Call to retrieve relevant documents from a specialized database."""
     contextString = ""
-    results = RRFGraphQuery(query, 3, driver, vo)
+    results = RRFGraphQuery(query, 5, driver, vo)
+    
     #print("DocumentRetriever: Results retrieved...")
     keys = [key for key in results.keys()]
     results = RetrieveSections(keys, driver)
