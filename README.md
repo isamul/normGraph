@@ -1,6 +1,7 @@
 ![NormGraph](img/banner.png)
 
-# Companion Repository to the Masters Thesis "Natural Language Processing for Standards"
+# Companion Repository to the Masters Thesis 
+# "Natural Language Processing for Standards"
 
 This repository contains the source code of the base application logic without the dedicated UI, as well as a few helper notebooks for the data ingetion process and benchmark.
 
@@ -23,7 +24,9 @@ LANGGRAPH-BASE
 ├── .gitignore
 ├── application_output.ipynb    # used for debugging purposes
 ├── assistant.ipynb             # used for debugging purposes
-└── langgraph.json              # required for deployment in LangGraph Studio
+├── langgraph.json              # required for deployment in LangGraph Studio
+├── helper_notebooks_benchmark  # contains notebooks used for the benchmark
+└── helper_notebooks_ingestion  # contains notebooks required for the initial data ingestion
 ```
 
 Run the following steps to run the NormGraph in the development environment LangGraph Studio (currently MacOS only):
@@ -39,9 +42,9 @@ git clone https://github.com/langchain-ai/langgraph-example.git
 cp .env.example .env
 ```
 5. Open LangGraph Studio and select the cloned directory to run  
-
+llama
 ⚠️ Before running the NormGraph
-- running NormGraph requires a neo4j Graph-Database containing data of standard documents (follow steps in the DataIngestion Notebook below to setup a neo4j instance)
+- running NormGraph requires a [neo4j](https://neo4j.com) Graph-Database containing data of standard documents (follow steps in `helper_notebooks_ingestion` below to setup a neo4j instance)
 - the application NormAI (NormGraph + UI) (add repo) can be run on windows as well
 
 
@@ -55,6 +58,26 @@ cp .env.example .env
 
 ## Helper Notebooks
 
+The helper notebooks contain smaller utilities required for running the main application. The notebooks in `helper_notebooks_ingestion` need to be run in advance for the application to be functional.
 
 
-...
+```
+helper_notebooks_benchmark
+└── results
+   ├── Benchmark_results.xlsx   # excel sheet aggregating all results, comments and statistics of the benchmark
+   ├── token_counts_4o.csv      # csv-file with imput- and output-token count of the 4o reference model
+   └── token_counts_4o+RAG.csv  # csv-file with imput- and output-token count of the 4o+RAG reference model
+├── benchmark_4o.ipynb          # Notebook used for benchmarking the 4o reference model
+├── benchmark_4o+RAG.ipynb      # Notebook used for benchmarking the 4o+RAG reference model
+└── questions.csv               # csv list containing all benchmark questions
+```
+
+```
+helper_notebooks_ingestion
+├── img
+├── markdown_ingestion.ipynb    # Notebook required for ingesting markdown into the neo4j database
+└── voyage_embed.ipynb          # Notebook required for creating text embeddings for the contents of the database
+```
+
+
+
