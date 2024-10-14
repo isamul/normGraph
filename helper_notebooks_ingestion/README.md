@@ -8,8 +8,8 @@ Steps:
 - follow instructions in `voyage_embed.ipynb` to create the corresponding vector embeddings
 
 
-Visualization of the Data ingestion process:
+## Visualization of the Data ingestion process:
 ![Data ingestion](img/data_ingestion.png)
 
-Database schema of the neo4j graph-database to be created:
+## Database schema of the neo4j graph-database to be created:
 ![DB schema](img/db_schema.png)
