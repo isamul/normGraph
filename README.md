@@ -11,15 +11,15 @@ The web-app implementation *normAI* with a dedicated UI is available in a separa
 The base application directory is structured as follows:
 ```
 LANGGRAPH-BASE
-├── base_agent  # folder containing the main application
-│   └── utils   # contains the components the application consists of
-│       ├── expert_nodes.py  # graph nodes used in the expert-module
-│       ├── nodes.py         # grpah nodes used in the agent-module
-│       ├── prompts.py       # contains all prompts used with the PLM in the application
-│       ├── state.py         # contains class structure of the application (state machine states)
-│       └── tools.py         # supporting functions used throughout the nodes
-│   ├── agent.py             # constructs the applications' graph architecture
-│   └── requirements.txt     # contains dependencies necessary for executing the application
+├── base_agent                  # folder containing the main application
+│   └── utils                   # contains the components the application consists of
+│       ├── expert_nodes.py     # graph nodes used in the expert-module
+│       ├── nodes.py            # grpah nodes used in the agent-module
+│       ├── prompts.py          # contains all prompts used with the PLM in the application
+│       ├── state.py            # contains class structure of the application (state machine states)
+│       └── tools.py            # supporting functions used throughout the nodes
+│   ├── agent.py                # constructs the applications' graph architecture
+│   └── requirements.txt        # contains dependencies necessary for executing the application
 ├── img
 ├── .env
 ├── .gitignore
