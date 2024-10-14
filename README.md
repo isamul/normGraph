@@ -1,6 +1,6 @@
 ![NormGraph](img/banner.png)
 
-# Companion Repository to the Masters Thesis \
+# Companion Repository to the Masters Thesis <br />
 "Natural Language Processing for Standards"
 
 This repository contains the source code of the base application logic without the dedicated UI, as well as a few helper notebooks for the data ingetion process and benchmark.
