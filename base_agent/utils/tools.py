@@ -1,9 +1,30 @@
+"""
+This module provides a set of tools and utilities for interacting with various APIs and databases It includes:
+
+1. Import Dependencies:
+   - Imports necessary libraries and modules, including Pydantic for data validation, Neo4j for database interaction.
+
+2. Environment Variables:
+   - Defines environment variables for connecting to Neo4j and VoyageAI.
+
+3. Data Classes:
+   - Defines several Pydantic data models (`Step`, `Plan`, `StepResult`, `Calculation`, `Conclusion`) to structure and validate data used in the application.
+
+4. Utility Functions:
+   - functions for embedding, ranking, and retrieving data from databases.
+
+5. Tool Definitions:
+   - Defines tools using the `@tool` decorator for document retrieval, expert model invocation, and database searching, each with specific input schemas and descriptions.
+
+6. Agent Tools:
+   - Aggregates the defined tools into a list for use by an agent.
+"""
+
 #--------------Import Dependencies-------------------#
 from typing import List
 from langchain_core.tools import tool
 from pydantic import BaseModel, Field
 from pydantic.v1 import BaseModel as BaseModelV1, Field as FieldV1
-from wolframalpha import Client
 import os
 import re
 #from openai import OpenAI
@@ -21,7 +42,6 @@ EMBEDDING_MODEL = 'voyage-multilingual-2'
 driver = GraphDatabase.driver(neo4j_uri, auth=(neo4j_user, neo4j_password))
 #openai_client = OpenAI ()
 vo = voyageai.Client()
-wa = Client(wolfram_alpha_appid)
 
 print("Driver and OpenAI client initialized...")
 

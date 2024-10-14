@@ -32,7 +32,7 @@ LANGGRAPH-BASE
 Run the following steps to run the NormGraph in the development environment LangGraph Studio (currently MacOS only):
 1. Clone this repository
 ```shell
-git clone https://github.com/langchain-ai/langgraph-example.git
+git clone https://github.com/isamul/normGraph.git
 ```
    
 2. Download [LangGraph Studio](https://github.com/langchain-ai/langgraph-studio) and follow the install instructions

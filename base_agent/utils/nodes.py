@@ -26,6 +26,7 @@ from langchain_core.messages import AIMessage, ToolMessage
 from langfuse.callback import CallbackHandler
 
 # Initialize the callback handler for logging and monitoring
+# can be disabled by removing the callback handler from the node "call_agent_model"
 langfuse_handler = CallbackHandler(
     secret_key="",
     public_key="",

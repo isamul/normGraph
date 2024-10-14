@@ -28,7 +28,7 @@ Functions:
 
 from functools import lru_cache
 from langchain_openai import ChatOpenAI
-from base_agent.utils.tools import Plan, StepResult, Calculation, Conclusion, SearchDataBase, parse_steps_fixed, DataBase, sort_steps, wa
+from base_agent.utils.tools import Plan, StepResult, Calculation, Conclusion, SearchDataBase, parse_steps_fixed, sort_steps
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.messages import AIMessage
 from openai import OpenAI
@@ -50,7 +50,7 @@ def _get_model(model_name: str):
     elif model_name == "calculator":
         client = OpenAI()
         assistant = client.beta.assistants.retrieve(
-            assistant_id='asst_7VQGXcbxkAgXMYNLns3e5tTU'
+            assistant_id='asst_7VQGXcbxkAgXMYNLns3e5tTU'    # OpenAI Assistant with code interpreter access for calculations
             )
         return client, assistant
 
