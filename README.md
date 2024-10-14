@@ -24,16 +24,22 @@ LANGGRAPH-BASE
 └── langgraph.json              # required for deployment in LangGraph Studio
 ```
 
-- the application can be tested with [LangGraph Studio]([https://www.google.com](https://github.com/langchain-ai/langgraph-studio) by simply selecting the cloned directory as a source
-- environment variables (API-Keys) need to be present
-- LangGraph UI is currently MacOS only
-- the application NormAI (NormGraph + UI) (add repo) can be run on windows as well
-
-You will then want to create a `.env` file with the relevant environment variables:
-
+Run the following steps to run the NormGraph in the development environment LangGraph Studio (currently MacOS only):
+1. Clone this repository
+```shell
+git clone https://github.com/langchain-ai/langgraph-example.git
+```
+   
+2. Download ([LangGraph Studio](https://github.com/langchain-ai/langgraph-studio) and follow the install instructions
+3. A Docker runtime needs to be present. Docker desktop can be downloaded from [here](https://www.docker.com/products/docker-desktop/).
+4. Add environment variables (API-Keys) to the `.env` file. For that copy the `.env.example` using the command below:
 ```shell
 cp .env.example .env
 ```
+5. Open LangGraph Studio and select the cloned directory to run  
+
+- the application NormAI (NormGraph + UI) (add repo) can be run on windows as well
+
 
 ### NormGraph Application Graph-Structure
 ![Application architecture](img/application_architecture_.png)
