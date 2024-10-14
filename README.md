@@ -43,6 +43,7 @@ cp .env.example .env
 ```
 5. Open LangGraph Studio and select the cloned directory to run  
 llama
+
 ⚠️ Before running the NormGraph
 - running NormGraph requires a [neo4j](https://neo4j.com) Graph-Database containing data of standard documents (follow steps in `helper_notebooks_ingestion` below to setup a neo4j instance)
 - the application NormAI (NormGraph + UI) (add repo) can be run on windows as well
