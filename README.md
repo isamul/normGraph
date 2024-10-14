@@ -1,5 +1,7 @@
 ![NormGraph](img/banner.png)
 
+<a href="https://doi.org/10.5281/zenodo.13930597"><img src="https://zenodo.org/badge/857379406.svg" alt="DOI"></a>
+
 # Companion Repository to the Masters Thesis "Natural Language Processing for Standards"
 
 This repository contains the source code of the base application logic without the dedicated UI, as well as a few helper notebooks for the data ingetion process and benchmark. 
