@@ -2,7 +2,7 @@
 
 # Companion Repository to the Masters Thesis "Natural Language Processing for Standards"
 
-This repository contains the source code of the base application logic without the dedicated UI, as well as a few helper notebooks for the data ingetion process and benchmark.
+This repository contains the source code of the base application logic without the dedicated UI, as well as a few helper notebooks for the data ingetion process and benchmark. The web-app implementation *normAI* with a dedicated UI is available in a separate repository [here](https://github.com/isamul/normAI).
 
 
 ## NormGraph base application
@@ -40,10 +40,9 @@ git clone https://github.com/isamul/normGraph.git
 ```shell
 cp .env.example .env
 ```
-5. Open LangGraph Studio and select the cloned directory to run  
-llama
+5. Open LangGraph Studio and select the cloned directory to run the application
 
-⚠️ Before running the NormGraph
+⚠️ Before running NormGraph
 - running NormGraph requires a [neo4j](https://neo4j.com) Graph-Database containing data of standard documents (follow steps in `helper_notebooks_ingestion` below to setup a neo4j instance)
 - the application NormAI (NormGraph + UI) (add repo) can be run on windows as well
 
