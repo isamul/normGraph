@@ -1,3 +1,5 @@
+![NormGraph](img/banner.png)
+
 # Companion Repository to the Masters Thesis "Natural Language Processing for Standards"
 
 This repository contains the source code of the base application logic without the dedicated UI, as well as a few helper notebooks for the data ingetion process and benchmark.
@@ -30,7 +32,7 @@ Run the following steps to run the NormGraph in the development environment Lang
 git clone https://github.com/langchain-ai/langgraph-example.git
 ```
    
-2. Download ([LangGraph Studio](https://github.com/langchain-ai/langgraph-studio) and follow the install instructions
+2. Download [LangGraph Studio](https://github.com/langchain-ai/langgraph-studio) and follow the install instructions
 3. A Docker runtime needs to be present. Docker desktop can be downloaded from [here](https://www.docker.com/products/docker-desktop/).
 4. Add environment variables (API-Keys) to the `.env` file. For that copy the `.env.example` using the command below:
 ```shell
@@ -38,6 +40,8 @@ cp .env.example .env
 ```
 5. Open LangGraph Studio and select the cloned directory to run  
 
+⚠️ Before running the NormGraph
+- running NormGraph requires a neo4j Graph-Database containing data of standard documents (follow steps in the DataIngestion Notebook below to setup a neo4j instance)
 - the application NormAI (NormGraph + UI) (add repo) can be run on windows as well
 
 
@@ -50,5 +54,7 @@ cp .env.example .env
 ![NormGraph in LangGraph Studio](img/LangGraphUI.png)
 
 ## Helper Notebooks
+
+
 
 ...
